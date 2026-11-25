@@ -177,4 +177,4 @@ Test browser butuh Chrome (`MUSE2API_CHROMIUM`). Panduan lengkap untuk kontribut
 ## Lisensi dan kredit
 
 MIT. Lihat [`LICENSE`](LICENSE).
-GemuseAPI adalah fork dari [muse2api](https://github.com/czg86389-hub/muse2api) karya czg86389-hub dan kontributornya. Bagian inti (engine CDP, pool akun, endpoint OpenAI, admin) berasal dari sana. Gebang Studio menambahkan UI chat, file buatan muse, batch template, ingatan percakapan, failover video, dan terjemahan Indonesia.
+GemuseAPI adalah fork dari [muse2api](https://github.com/czg86389-hub/muse2api) karya czg86389-hub dan kontributornya. Bagian inti (engine CDP, pool akun, endpoint OpenAI, admin) berasal dari sana. Killer Studio menambahkan UI chat, file buatan muse, batch template, ingatan percakapan, failover video, dan terjemahan Indonesia.
