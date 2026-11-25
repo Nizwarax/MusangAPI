@@ -1,0 +1,10 @@
+{
+  "extName": {
+    "message": "GemuseAPI Cookie 导入",
+    "description": "Extension name"
+  },
+  "extDesc": {
+    "message": "一键把 muse.ai 的登录 Cookie 导入到你的 GemuseAPI 服务。不用装 Python、不用开终端。",
+    "description": "Extension description"
+  }
+}

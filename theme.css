@@ -1,0 +1,35 @@
+/* Token muse.ai — satu sumber untuk chat (/) dan konsol admin (/admin).
+   Nilai diukur dari computed style muse.ai (2026-11-24); latar transparan dijadikan warna solid setara di atas --m-bg. ds-allow-hardcode:start */
+:root{
+  --m-bg:#181819;
+  --m-surface:#1f1f20;
+  --m-surface-2:#2c2c2e;
+  --m-sunken:#121213;
+  --m-composer:#323232;
+  --m-hover:#262627;
+  --m-active:#2f2f30;
+  --m-rail-active:#28292b;
+  --m-line:rgba(255,255,255,.12);
+  --m-line-2:rgba(255,255,255,.18);
+  --m-text:#fff;
+  --m-muted:rgba(242,247,255,.6);
+  --m-faint:rgba(242,247,255,.4);
+  --m-link:#9cc2ff;
+  --m-focus:#8ab4ff;
+  --m-ok:#4ade80;
+  --m-bad:#ff8a80;
+  --m-bad-bg:#342121;
+  --m-warn:#fbbf24;
+  --m-on-primary:#111;
+  --m-r-card:20px;
+  --m-r-bubble:22px;
+  --m-r-pill:32px;
+  --m-r-ctrl:12px;
+  --m-rail:72px;
+  --m-side:240px;
+  --m-col:768px;
+  --m-font:system-ui,-apple-system,"Segoe UI",Roboto,"Microsoft YaHei",sans-serif;
+  --m-mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+/* ds-allow-hardcode:end */

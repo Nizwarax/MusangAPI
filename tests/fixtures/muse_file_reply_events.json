@@ -1,0 +1,225 @@
+[
+ {
+  "event": "delta.message_start",
+  "payload": {
+   "agent_id": "00000000-0000-4000-8000-000000000001",
+   "chat_context": {
+    "chat_id": "00000000-0000-4000-8000-000000000002",
+    "chat_kind": "direct",
+    "device_id": "00000000-0000-4000-8000-000000000003",
+    "event_kind": "message",
+    "originating_channel": "main",
+    "require_mention": false
+   },
+   "is_thread": true,
+   "message_id": "assistant-msg-00000000-0000-4000-8000-000000000004",
+   "message_seq": 1,
+   "metadata": {
+    "model": "Muse Spark",
+    "root_message_execution_id": "00000000-0000-4000-8000-000000000004",
+    "source": "runtime",
+    "started_at_ms": 1795514975426
+   },
+   "parent_agent_id": "00000000-0000-4000-8000-000000000001",
+   "reply_to_message_id": "",
+   "resources": [],
+   "seq": 1,
+   "session_id": "00000000-0000-4000-8000-000000000002",
+   "transcript_surface": "main_chat"
+  },
+  "seq": 160722,
+  "ts_ms": 1795514976632,
+  "type": "event"
+ },
+ {
+  "event": "delta.text_append",
+  "payload": {
+   "is_thread": true,
+   "message_id": "assistant-msg-00000000-0000-4000-8000-000000000004",
+   "message_seq": 1,
+   "parent_agent_id": "00000000-0000-4000-8000-000000000001",
+   "parent_message_id": "assistant-msg-00000000-0000-4000-8000-000000000004",
+   "presentations": [],
+   "reply_to_message_id": "",
+   "resources": [],
+   "seq": 1,
+   "session_id": "00000000-0000-4000-8000-000000000002",
+   "text": "Selesai,",
+   "transcript_surface": "main_chat",
+   "widgets": []
+  },
+  "seq": 160723,
+  "ts_ms": 1795514976634,
+  "type": "event"
+ },
+ {
+  "event": "delta.text_append",
+  "payload": {
+   "is_thread": true,
+   "message_id": "assistant-msg-00000000-0000-4000-8000-000000000004",
+   "message_seq": 1,
+   "parent_agent_id": "00000000-0000-4000-8000-000000000001",
+   "parent_message_id": "assistant-msg-00000000-0000-4000-8000-000000000004",
+   "presentations": [],
+   "reply_to_message_id": "",
+   "resources": [],
+   "seq": 1,
+   "session_id": "00000000-0000-4000-8000-000000000002",
+   "text": " ini",
+   "transcript_surface": "main_chat",
+   "widgets": []
+  },
+  "seq": 160724,
+  "ts_ms": 1795514976639,
+  "type": "event"
+ },
+ {
+  "event": "delta.text_append",
+  "payload": {
+   "is_thread": true,
+   "message_id": "assistant-msg-00000000-0000-4000-8000-000000000004",
+   "message_seq": 1,
+   "parent_agent_id": "00000000-0000-4000-8000-000000000001",
+   "parent_message_id": "assistant-msg-00000000-0000-4000-8000-000000000004",
+   "presentations": [],
+   "reply_to_message_id": "",
+   "resources": [],
+   "seq": 1,
+   "session_id": "00000000-0000-4000-8000-000000000002",
+   "text": " fil",
+   "transcript_surface": "main_chat",
+   "widgets": []
+  },
+  "seq": 160725,
+  "ts_ms": 1795514976639,
+  "type": "event"
+ },
+ {
+  "event": "delta.text_append",
+  "payload": {
+   "is_thread": true,
+   "message_id": "assistant-msg-00000000-0000-4000-8000-000000000004",
+   "message_seq": 1,
+   "parent_agent_id": "00000000-0000-4000-8000-000000000001",
+   "parent_message_id": "assistant-msg-00000000-0000-4000-8000-000000000004",
+   "presentations": [],
+   "reply_to_message_id": "",
+   "resources": [],
+   "seq": 1,
+   "session_id": "00000000-0000-4000-8000-000000000002",
+   "text": "enya:\n\n",
+   "transcript_surface": "main_chat",
+   "widgets": []
+  },
+  "seq": 160726,
+  "ts_ms": 1795514976639,
+  "type": "event"
+ },
+ {
+  "event": "delta.presentation",
+  "payload": {
+   "agent_id": "00000000-0000-4000-8000-000000000001",
+   "chat_context": {
+    "chat_id": "00000000-0000-4000-8000-000000000002",
+    "chat_kind": "direct",
+    "device_id": "00000000-0000-4000-8000-000000000003",
+    "event_kind": "message",
+    "originating_channel": "main",
+    "require_mention": false
+   },
+   "chat_event_seq": 1,
+   "data": {
+    "fallback_text": "![uji-satu.txt](sandbox://workspace/your_files/uji-satu.txt)",
+    "file": {
+     "byte_len": 14,
+     "height": 579,
+     "label": "uji-satu.txt",
+     "mime": "text/plain",
+     "missing": false,
+     "path": "sandbox://workspace/your_files/uji-satu.txt",
+     "variants": {
+      "original": "https://00000000-0000-4000-8000-000000000005.metaaivm.com/media/raw/workspace/your_files/uji-satu.txt"
+     },
+     "width": 900
+    }
+   },
+   "display_text": "uji-satu.txt",
+   "fallback_text": "![uji-satu.txt](sandbox://workspace/your_files/uji-satu.txt)",
+   "id": "widget-00000000-0000-4000-8000-000000000006",
+   "is_thread": true,
+   "kind": "file",
+   "message_id": "00000000-0000-4000-8000-000000000007",
+   "parent_agent_id": "00000000-0000-4000-8000-000000000001",
+   "reply_to_text": "uji-satu.txt",
+   "seq": 1,
+   "session_id": "00000000-0000-4000-8000-000000000002",
+   "state": {
+    "data": {},
+    "version": 0
+   },
+   "transcript_surface": "main_chat"
+  },
+  "seq": 160730,
+  "ts_ms": 1795514982817,
+  "type": "event"
+ },
+ {
+  "event": "delta.message_done",
+  "payload": {
+   "actions": [],
+   "agent_id": "00000000-0000-4000-8000-000000000001",
+   "chat_context": {
+    "chat_id": "00000000-0000-4000-8000-000000000002",
+    "chat_kind": "direct",
+    "device_id": "00000000-0000-4000-8000-000000000003",
+    "event_kind": "message",
+    "originating_channel": "main",
+    "require_mention": false
+   },
+   "is_thread": true,
+   "message_id": "assistant-msg-00000000-0000-4000-8000-000000000004",
+   "message_seq": 1,
+   "parent_agent_id": "00000000-0000-4000-8000-000000000001",
+   "presentations": [],
+   "reply_to_message_id": "",
+   "resources": [],
+   "seq": 1,
+   "session_id": "00000000-0000-4000-8000-000000000002",
+   "status": "completed",
+   "transcript": {
+    "agent_id": "00000000-0000-4000-8000-000000000001",
+    "message_id": "00000000-0000-4000-8000-000000000004",
+    "messages": [
+     {
+      "content": [
+       {
+        "id": "text-00000000-0000-4000-8000-000000000004-1",
+        "status": "done",
+        "text": "Selesai, ini filenya:\n\n",
+        "type": "text"
+       }
+      ],
+      "created_at_ms": 1795514975426,
+      "id": "assistant-msg-00000000-0000-4000-8000-000000000004",
+      "role": "assistant",
+      "status": "done"
+     }
+    ],
+    "metadata": {
+     "completed_at_ms": 1795514983482,
+     "model": "Muse Spark",
+     "source": "runtime",
+     "started_at_ms": 1795514975426
+    },
+    "reply_to_message_id": "",
+    "status": "completed",
+    "version": 1
+   },
+   "transcript_surface": "main_chat",
+   "widgets": []
+  },
+  "seq": 160734,
+  "ts_ms": 1795514983565,
+  "type": "event"
+ }
+]

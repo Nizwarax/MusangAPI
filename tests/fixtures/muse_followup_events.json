@@ -1,0 +1,367 @@
+[
+ {
+  "event": "task.status",
+  "payload": {
+   "active_subagent_count": 0,
+   "agent_id": "00000000-0000-4000-8000-000000000001",
+   "is_thread": true,
+   "root_agent_id": "00000000-0000-4000-8000-000000000001",
+   "session_id": "00000000-0000-4000-8000-000000000002",
+   "status": "running",
+   "task_id": "00000000-0000-4000-8000-000000000001"
+  },
+  "seq": 112962,
+  "ts_ms": 1795515109739,
+  "type": "event"
+ },
+ {
+  "event": "delta.message_start",
+  "payload": {
+   "agent_id": "00000000-0000-4000-8000-000000000001",
+   "chat_context": {
+    "chat_id": "00000000-0000-4000-8000-000000000002",
+    "chat_kind": "direct",
+    "device_id": "00000000-0000-4000-8000-000000000003",
+    "event_kind": "message",
+    "originating_channel": "main",
+    "require_mention": false
+   },
+   "is_thread": true,
+   "message_id": "assistant-msg-00000000-0000-4000-8000-000000000004",
+   "message_seq": 1,
+   "metadata": {
+    "model": "Muse Spark",
+    "root_message_execution_id": "00000000-0000-4000-8000-000000000004",
+    "source": "runtime",
+    "started_at_ms": 1795515114292
+   },
+   "parent_agent_id": "00000000-0000-4000-8000-000000000001",
+   "reply_to_message_id": "",
+   "resources": [],
+   "seq": 1,
+   "session_id": "00000000-0000-4000-8000-000000000002",
+   "transcript_surface": "main_chat"
+  },
+  "seq": 112973,
+  "ts_ms": 1795515114848,
+  "type": "event"
+ },
+ {
+  "event": "delta.text_append",
+  "payload": {
+   "is_thread": true,
+   "message_id": "assistant-msg-00000000-0000-4000-8000-000000000004",
+   "message_seq": 1,
+   "parent_agent_id": "00000000-0000-4000-8000-000000000001",
+   "parent_message_id": "assistant-msg-00000000-0000-4000-8000-000000000004",
+   "presentations": [],
+   "reply_to_message_id": "",
+   "resources": [],
+   "seq": 1,
+   "session_id": "00000000-0000-4000-8000-000000000002",
+   "text": "Sudah jadi, ini",
+   "transcript_surface": "main_chat",
+   "widgets": []
+  },
+  "seq": 112974,
+  "ts_ms": 1795515114848,
+  "type": "event"
+ },
+ {
+  "event": "delta.text_append",
+  "payload": {
+   "is_thread": true,
+   "message_id": "assistant-msg-00000000-0000-4000-8000-000000000004",
+   "message_seq": 1,
+   "parent_agent_id": "00000000-0000-4000-8000-000000000001",
+   "parent_message_id": "assistant-msg-00000000-0000-4000-8000-000000000004",
+   "presentations": [],
+   "reply_to_message_id": "",
+   "resources": [],
+   "seq": 1,
+   "session_id": "00000000-0000-4000-8000-000000000002",
+   "text": " filenya.\n\n",
+   "transcript_surface": "main_chat",
+   "widgets": []
+  },
+  "seq": 112975,
+  "ts_ms": 1795515114850,
+  "type": "event"
+ },
+ {
+  "event": "delta.presentation",
+  "payload": {
+   "agent_id": "00000000-0000-4000-8000-000000000001",
+   "chat_context": {
+    "chat_id": "00000000-0000-4000-8000-000000000002",
+    "chat_kind": "direct",
+    "device_id": "00000000-0000-4000-8000-000000000003",
+    "event_kind": "message",
+    "originating_channel": "main",
+    "require_mention": false
+   },
+   "chat_event_seq": 1,
+   "data": {
+    "fallback_text": "![data.csv](sandbox://workspace/your_files/data.csv)\n",
+    "file": {
+     "byte_len": 57,
+     "height": 579,
+     "label": "data.csv",
+     "mime": "text/csv",
+     "missing": false,
+     "path": "sandbox://workspace/your_files/data.csv",
+     "variants": {
+      "original": "https://00000000-0000-4000-8000-000000000005.metaaivm.com/media/raw/workspace/your_files/data.csv"
+     },
+     "width": 900
+    }
+   },
+   "display_text": "data.csv",
+   "fallback_text": "![data.csv](sandbox://workspace/your_files/data.csv)\n",
+   "id": "widget-00000000-0000-4000-8000-000000000006",
+   "is_thread": true,
+   "kind": "file",
+   "message_id": "00000000-0000-4000-8000-000000000007",
+   "parent_agent_id": "00000000-0000-4000-8000-000000000001",
+   "reply_to_text": "data.csv",
+   "seq": 1,
+   "session_id": "00000000-0000-4000-8000-000000000002",
+   "state": {
+    "data": {},
+    "version": 0
+   },
+   "transcript_surface": "main_chat"
+  },
+  "seq": 112980,
+  "ts_ms": 1795515120862,
+  "type": "event"
+ },
+ {
+  "event": "delta.message_done",
+  "payload": {
+   "actions": [],
+   "agent_id": "00000000-0000-4000-8000-000000000001",
+   "chat_context": {
+    "chat_id": "00000000-0000-4000-8000-000000000002",
+    "chat_kind": "direct",
+    "device_id": "00000000-0000-4000-8000-000000000003",
+    "event_kind": "message",
+    "originating_channel": "main",
+    "require_mention": false
+   },
+   "is_thread": true,
+   "message_id": "assistant-msg-00000000-0000-4000-8000-000000000004",
+   "message_seq": 1,
+   "parent_agent_id": "00000000-0000-4000-8000-000000000001",
+   "presentations": [],
+   "reply_to_message_id": "",
+   "resources": [],
+   "seq": 1,
+   "session_id": "00000000-0000-4000-8000-000000000002",
+   "status": "completed",
+   "transcript": {
+    "agent_id": "00000000-0000-4000-8000-000000000001",
+    "message_id": "00000000-0000-4000-8000-000000000004",
+    "messages": [
+     {
+      "content": [
+       {
+        "id": "text-00000000-0000-4000-8000-000000000004-1",
+        "status": "done",
+        "text": "Sudah jadi, ini filenya.\n\n",
+        "type": "text"
+       }
+      ],
+      "created_at_ms": 1795515114292,
+      "id": "assistant-msg-00000000-0000-4000-8000-000000000004",
+      "role": "assistant",
+      "status": "done"
+     }
+    ],
+    "metadata": {
+     "completed_at_ms": 1795515121016,
+     "model": "Muse Spark",
+     "source": "runtime",
+     "started_at_ms": 1795515114292
+    },
+    "reply_to_message_id": "",
+    "status": "completed",
+    "version": 1
+   },
+   "transcript_surface": "main_chat",
+   "widgets": []
+  },
+  "seq": 112984,
+  "ts_ms": 1795515121082,
+  "type": "event"
+ },
+ {
+  "event": "delta.message_start",
+  "payload": {
+   "agent_id": "00000000-0000-4000-8000-000000000001",
+   "chat_context": {
+    "chat_id": "00000000-0000-4000-8000-000000000002",
+    "chat_kind": "direct",
+    "device_id": "00000000-0000-4000-8000-000000000003",
+    "event_kind": "message",
+    "originating_channel": "main",
+    "require_mention": false
+   },
+   "is_thread": true,
+   "message_id": "assistant-msg-00000000-0000-4000-8000-000000000008",
+   "message_seq": 1,
+   "metadata": {
+    "model": "Muse Spark",
+    "root_message_execution_id": "00000000-0000-4000-8000-000000000004",
+    "source": "runtime",
+    "started_at_ms": 1795515121100
+   },
+   "parent_agent_id": "00000000-0000-4000-8000-000000000001",
+   "reply_to_message_id": "",
+   "resources": [],
+   "seq": 1,
+   "session_id": "00000000-0000-4000-8000-000000000002",
+   "transcript_surface": "main_chat"
+  },
+  "seq": 112985,
+  "ts_ms": 1795515121108,
+  "type": "event"
+ },
+ {
+  "event": "delta.text_append",
+  "payload": {
+   "is_thread": true,
+   "message_id": "assistant-msg-00000000-0000-4000-8000-000000000008",
+   "message_seq": 1,
+   "parent_agent_id": "00000000-0000-4000-8000-000000000001",
+   "parent_message_id": "assistant-msg-00000000-0000-4000-8000-000000000008",
+   "presentations": [],
+   "reply_to_message_id": "",
+   "resources": [],
+   "seq": 1,
+   "session_id": "00000000-0000-4000-8000-000000000002",
+   "text": "Isinya",
+   "transcript_surface": "main_chat",
+   "widgets": []
+  },
+  "seq": 112986,
+  "ts_ms": 1795515121109,
+  "type": "event"
+ },
+ {
+  "event": "delta.text_append",
+  "payload": {
+   "is_thread": true,
+   "message_id": "assistant-msg-00000000-0000-4000-8000-000000000008",
+   "message_seq": 1,
+   "parent_agent_id": "00000000-0000-4000-8000-000000000001",
+   "parent_message_id": "assistant-msg-00000000-0000-4000-8000-000000000008",
+   "presentations": [],
+   "reply_to_message_id": "",
+   "resources": [],
+   "seq": 1,
+   "session_id": "00000000-0000-4000-8000-000000000002",
+   "text": " 3 baris data siswa",
+   "transcript_surface": "main_chat",
+   "widgets": []
+  },
+  "seq": 112987,
+  "ts_ms": 1795515121111,
+  "type": "event"
+ },
+ {
+  "event": "delta.text_append",
+  "payload": {
+   "is_thread": true,
+   "message_id": "assistant-msg-00000000-0000-4000-8000-000000000008",
+   "message_seq": 1,
+   "parent_agent_id": "00000000-0000-4000-8000-000000000001",
+   "parent_message_id": "assistant-msg-00000000-0000-4000-8000-000000000008",
+   "presentations": [],
+   "reply_to_message_id": "",
+   "resources": [],
+   "seq": 1,
+   "session_id": "00000000-0000-4000-8000-000000000002",
+   "text": " dengan kolom nama dan nilai.",
+   "transcript_surface": "main_chat",
+   "widgets": []
+  },
+  "seq": 112988,
+  "ts_ms": 1795515121111,
+  "type": "event"
+ },
+ {
+  "event": "task.status",
+  "payload": {
+   "active_subagent_count": 0,
+   "agent_id": "00000000-0000-4000-8000-000000000001",
+   "is_thread": true,
+   "root_agent_id": "00000000-0000-4000-8000-000000000001",
+   "session_id": "00000000-0000-4000-8000-000000000002",
+   "status": "completed",
+   "task_id": "00000000-0000-4000-8000-000000000001"
+  },
+  "seq": 112990,
+  "ts_ms": 1795515121412,
+  "type": "event"
+ },
+ {
+  "event": "delta.message_done",
+  "payload": {
+   "actions": [],
+   "agent_id": "00000000-0000-4000-8000-000000000001",
+   "chat_context": {
+    "chat_id": "00000000-0000-4000-8000-000000000002",
+    "chat_kind": "direct",
+    "device_id": "00000000-0000-4000-8000-000000000003",
+    "event_kind": "message",
+    "originating_channel": "main",
+    "require_mention": false
+   },
+   "is_thread": true,
+   "message_id": "assistant-msg-00000000-0000-4000-8000-000000000008",
+   "message_seq": 1,
+   "parent_agent_id": "00000000-0000-4000-8000-000000000001",
+   "presentations": [],
+   "reply_to_message_id": "",
+   "resources": [],
+   "seq": 1,
+   "session_id": "00000000-0000-4000-8000-000000000002",
+   "status": "completed",
+   "transcript": {
+    "agent_id": "00000000-0000-4000-8000-000000000001",
+    "message_id": "00000000-0000-4000-8000-000000000008",
+    "messages": [
+     {
+      "content": [
+       {
+        "id": "text-00000000-0000-4000-8000-000000000008-1",
+        "status": "done",
+        "text": "Isinya 3 baris data siswa dengan kolom nama dan nilai.",
+        "type": "text"
+       }
+      ],
+      "created_at_ms": 1795515121100,
+      "id": "assistant-msg-00000000-0000-4000-8000-000000000008",
+      "role": "assistant",
+      "status": "done"
+     }
+    ],
+    "metadata": {
+     "completed_at_ms": 1795515121411,
+     "model": "Muse Spark",
+     "source": "runtime",
+     "started_at_ms": 1795515121100
+    },
+    "reply_to_message_id": "",
+    "status": "completed",
+    "version": 1
+   },
+   "transcript_surface": "main_chat",
+   "widgets": []
+  },
+  "seq": 112993,
+  "ts_ms": 1795515121473,
+  "type": "event"
+ }
+]

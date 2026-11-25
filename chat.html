@@ -1,0 +1,986 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
+<title>GemuseAPI · Chat</title>
+<link rel="stylesheet" href="theme.css">
+<style>
+  /* ds-allow-hardcode:start: halaman mandiri tanpa sistem token (sama seperti admin.html); angka hasil ukur muse.ai */
+  /* Nilai diukur dari muse.ai (computed style), bukan ditebak. */
+  /* Semua token dari /theme.css (dipakai juga oleh konsol admin). */
+  :root{
+    --bg:var(--m-bg); --bubble:var(--m-surface); --bubble-user:var(--m-surface-2); --composer:var(--m-composer);
+    --hover:var(--m-hover); --active:var(--m-active); --line:var(--m-line);
+    --text:var(--m-text); --muted:var(--m-muted); --faint:var(--m-faint);
+    --bad:var(--m-bad); --bad-bg:var(--m-bad-bg); --focus:var(--m-focus);
+    --col:var(--m-col); --side:var(--m-side); --r-bubble:var(--m-r-bubble); --r-pill:var(--m-r-pill);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;background:var(--bg);color:var(--text);font:16px/24px var(--m-font);-webkit-font-smoothing:antialiased;overflow:hidden}
+  button,input,select,textarea{font:inherit;color:inherit}
+  button{cursor:pointer;background:none;border:0;padding:0}
+  :focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:8px}
+  .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  svg{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+  .app{display:flex;height:100dvh}
+
+  /* ---------- Sidebar: ukuran dari muse.ai (rail 72, panel 240, baris 36, tepi teks 24px) ---------- */
+  aside{flex:none;display:flex;background:var(--bg)}
+  /* Rail: ikon + label pendek (ikon saja tidak menjelaskan "Admin"); item pertama sejajar kotak pencarian (y=12). */
+  .rail{width:var(--m-rail);flex:none;display:flex;flex-direction:column;align-items:center;gap:8px;padding:12px 0;overflow-y:auto;scrollbar-width:none;border-right:1px solid var(--line)}
+  .rail :is(button,a){flex:none;width:var(--m-rail);display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--muted);text-decoration:none;font-size:11px;font-weight:500;line-height:14px}
+  .rail .ico{position:relative;width:40px;height:40px;display:grid;place-items:center;border-radius:50%;transition:background .15s}
+  .rail :is(button,a):hover .ico{background:var(--hover)}
+  .rail :is(button,a):hover,.rail [aria-current="page"]{color:var(--text)}
+  .rail [aria-current="page"] .ico{background:var(--m-rail-active)}
+  .rail svg{width:22px;height:22px}
+  .rail :is(button,a):focus-visible{outline:none}
+  .rail :is(button,a):focus-visible .ico{outline:2px solid var(--focus);outline-offset:1px}
+  .rail .grow{flex:1}
+  /* Garis pemisah: Chat di atas, bagian Admin di bawahnya. */
+  .rail .sep{flex:none;width:32px;height:1px;background:var(--line)}
+  /* Di Admin navigasi sudah di rail, jadi panel 240px dilepas untuk konsol. */
+  body.admin .side-panel{display:none}
+  /* Titik hanya untuk keadaan yang perlu tindakan: key bermasalah (merah) atau chat masih menjawab saat di Admin. */
+  .dot,.busy-dot{position:absolute;top:0;right:0;width:8px;height:8px;border-radius:50%;box-shadow:0 0 0 2px var(--bg)}
+  .dot{display:none}
+  .busy-dot{background:var(--m-ok)}
+  .dot.bad{display:block;background:var(--bad)}
+  .busy-dot[hidden]{display:none}
+  .side-panel{width:var(--side);display:flex;flex-direction:column;min-height:0;border-right:1px solid var(--line)}
+  .side-panel > section{flex:1;min-height:0;display:flex;flex-direction:column;padding:12px 12px 0}
+  .side-panel > section[hidden]{display:none}
+  .search{flex:none;display:flex;align-items:center;gap:8px;height:36px;padding:0 16px 0 11px;border-radius:999px;background:var(--composer);border:1px solid var(--line)}
+  .search:focus-within{border-color:var(--m-line-2)}
+  .search svg{width:16px;height:16px;color:var(--muted)}
+  .search input{flex:1;min-width:0;background:none;border:0;outline:0;font-size:14px;line-height:20px;font-weight:500}
+  .search input::placeholder{color:var(--muted)}
+  .sec-head{flex:none;display:flex;align-items:center;justify-content:space-between;height:36px;margin-top:12px;padding:0 4px 0 12px;font-size:14px;line-height:20px;font-weight:500;color:var(--muted)}
+  .icon-btn{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;color:var(--muted)}
+  .icon-btn:hover{background:var(--hover);color:var(--text)}
+  .icon-btn svg{width:18px;height:18px}
+  .threads{flex:1;min-height:0;overflow-y:auto;margin:0 -12px;padding:0 12px 12px;scrollbar-width:thin}
+  .th{position:relative;display:flex;align-items:center;height:36px;border-radius:12px;font-size:14px;line-height:20px;color:var(--text);text-decoration:none}
+  .th:hover{background:var(--hover)}
+  .th.on{background:var(--active)}
+  .th > button.open{flex:1;min-width:0;height:100%;text-align:left;padding:0 4px 0 12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .th .del{flex:none;display:none;place-items:center;min-width:28px;height:28px;margin-right:4px;border-radius:8px;color:var(--muted);font-size:12px}
+  .th:hover .del,.th:focus-within .del,.th .del.arm{display:grid}
+  .th .del.arm{padding:0 8px;color:var(--bad)}
+  .th .del:hover{color:var(--text);background:var(--hover)}
+  .th .del svg{width:16px;height:16px}
+  .empty-list{color:var(--muted);font-size:13px;line-height:20px;padding:8px 12px}
+
+  /* ---------- Main ---------- */
+  main,.admin-view{flex:1;min-width:0;display:flex;flex-direction:column;position:relative}
+  main[hidden],.admin-view[hidden]{display:none}
+  .admin-view iframe{flex:1;width:100%;border:0;background:var(--bg)}
+  .admin-head{display:none}
+  .busy-pill{margin-left:auto;font-size:13px;padding:6px 12px;border-radius:999px;background:var(--hover);color:var(--text);text-decoration:none;white-space:nowrap}
+  .busy-pill[hidden]{display:none}
+  header{height:56px;flex:none;display:flex;align-items:center;gap:8px;padding:0 16px}
+  .menu{display:none;padding:8px;border-radius:10px}
+  .menu:hover{background:var(--hover)}
+  .title{flex:1;min-width:0;font-size:15px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+  .scroll{flex:1;overflow-y:auto;overscroll-behavior:contain}
+  .col{max-width:var(--col);margin:0 auto;padding:8px 24px 24px}
+  .msg{display:flex;margin:12px 0}
+  .msg.user{flex-direction:column;align-items:flex-end}
+  .bubble{border-radius:min(var(--r-bubble),60%);padding:11px 15px;max-width:100%;min-width:0;overflow-wrap:anywhere}
+  .msg.assistant .bubble{background:var(--bubble);width:100%}
+  .msg.user .bubble{background:var(--bubble-user);max-width:80%;white-space:pre-wrap}
+  .bubble p{margin:0 0 10px;line-height:22px}
+  .bubble p:last-child,.bubble ul:last-child,.bubble ol:last-child,.bubble pre:last-child{margin-bottom:0}
+  .bubble ul,.bubble ol{margin:0 0 10px;padding-left:22px}
+  .bubble li{margin:2px 0;line-height:22px}
+  .bubble h1,.bubble h2,.bubble h3,.bubble h4{font-size:16px;line-height:22px;margin:14px 0 6px;font-weight:600}
+  .bubble h1:first-child,.bubble h2:first-child,.bubble h3:first-child{margin-top:0}
+  .bubble a{color:#9cc2ff}
+  .bubble a.file{display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:8px 14px;border:1px solid var(--line);border-radius:12px;color:var(--text);text-decoration:none;font-size:14px}
+  .bubble a.file:hover{background:var(--hover)}
+  .bubble a.file:focus-visible{outline:2px solid #9cc2ff;outline-offset:2px}
+  .bubble a.file svg{width:16px;height:16px;flex:none}
+  .bubble code{font:13.5px/20px ui-monospace,SFMono-Regular,Menlo,monospace;background:rgba(255,255,255,.08);padding:1px 5px;border-radius:6px}
+  .bubble blockquote{margin:0 0 10px;padding-left:12px;border-left:3px solid var(--line);color:var(--muted)}
+  .code{position:relative;margin:0 0 10px;border-radius:12px;background:#121213;border:1px solid var(--line);overflow:hidden}
+  .code-head{display:flex;justify-content:space-between;align-items:center;padding:6px 8px 6px 12px;font-size:12px;color:var(--muted);border-bottom:1px solid var(--line)}
+  .code pre{margin:0;padding:12px;overflow-x:auto}
+  .code pre code{background:none;padding:0;white-space:pre}
+  .mini{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);padding:4px 8px;border-radius:8px}
+  .mini:hover{background:var(--hover);color:var(--text)}
+  .mini svg{width:14px;height:14px}
+  .tools{display:flex;gap:2px;margin-top:6px;opacity:.0;transition:opacity .15s}
+  .msg:hover .tools,.tools:focus-within,.msg.assistant:last-child .tools{opacity:1}
+  a.mini{text-decoration:none}
+  .bubble .tbl{overflow-x:auto;margin:8px 0;border-radius:var(--m-r-ctrl)}
+  .bubble table{border-collapse:collapse;font-size:14px;line-height:20px}
+  .bubble th,.bubble td{border:1px solid var(--line);padding:6px 10px;text-align:left;vertical-align:top;overflow-wrap:break-word}
+  .bubble th{background:var(--hover);font-weight:600}
+  .wrap{width:100%;min-width:0}
+  .stamp{text-align:center;font-size:12px;line-height:16px;color:var(--muted);margin:24px 0 8px}
+  .note{font-size:13px;color:var(--muted);margin-top:8px}
+  .acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+  .msg.assistant .bubble:empty{display:none}
+  .err{background:var(--bad-bg);color:var(--bad);border-radius:14px;padding:10px 14px;font-size:14px;line-height:20px;margin-top:8px;display:flex;gap:12px;align-items:flex-start;justify-content:space-between}
+  .err button{color:var(--text);text-decoration:underline;white-space:nowrap;font-size:14px}
+  .media{display:block;max-width:100%;border-radius:14px;margin-top:4px;background:#000}
+  .caret::after{content:"";display:inline-block;width:8px;height:16px;margin-left:2px;vertical-align:-2px;background:currentColor;opacity:.7;animation:blink 1s steps(2) infinite}
+  .thinking{display:flex;gap:5px;padding:6px 0}
+  .thinking i{width:7px;height:7px;border-radius:50%;background:var(--muted);animation:bob 1.2s infinite ease-in-out}
+  .thinking i:nth-child(2){animation-delay:.15s}.thinking i:nth-child(3){animation-delay:.3s}
+  @keyframes blink{50%{opacity:0}}
+  @keyframes bob{0%,80%,100%{transform:translateY(0);opacity:.4}40%{transform:translateY(-4px);opacity:1}}
+  @media (prefers-reduced-motion:reduce){.caret::after,.thinking i{animation:none}}
+
+  .hero{max-width:var(--col);margin:0 auto;padding:18vh 24px 0;text-align:center}
+  .hero h1{font-size:28px;line-height:36px;font-weight:600;margin:0 0 8px;letter-spacing:-.01em}
+  .hero p{margin:0;color:var(--muted);font-size:15px}
+
+  /* ---------- Composer ---------- */
+  .dock{flex:none;padding:0 24px 16px}
+  .composer{max-width:var(--col);margin:0 auto;background:var(--composer);border-radius:var(--r-pill);padding:12px;display:flex;align-items:flex-end;gap:8px;
+    border:1px solid transparent;transition:border-color .15s}
+  .composer:focus-within{border-color:var(--line)}
+  .composer textarea{flex:1;min-width:0;resize:none;border:0;outline:0;background:transparent;font-size:15px;line-height:24px;max-height:192px;padding:4px 4px 4px 12px}
+  .composer textarea::placeholder{color:var(--muted)}
+  .composer{flex-wrap:wrap}
+  .composer.drop{outline:2px dashed var(--focus);outline-offset:2px}
+  .atts{width:100%;display:flex;flex-wrap:wrap;gap:8px;padding:0 4px 4px}
+  .atts[hidden]{display:none}
+  .att{position:relative;width:56px;height:56px;border-radius:12px;overflow:hidden;background:var(--hover)}
+  .att img{width:100%;height:100%;object-fit:cover;display:block}
+  .att button{position:absolute;top:2px;right:2px;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:var(--m-sunken);color:var(--text)}
+  .att button svg{width:14px;height:14px}
+  .attach{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;flex:none;color:var(--muted)}
+  .attach:hover{background:var(--hover);color:var(--text)}
+  .attach svg{width:20px;height:20px}
+  .att-msg{max-width:var(--col);margin:0 auto 6px;font-size:13px;color:var(--bad)}
+  .att-msg:empty{display:none}
+  .uimgs{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:6px;margin-bottom:6px;max-width:80%}
+  .uimgs img{width:96px;height:96px;object-fit:cover;border-radius:12px;display:block}
+  .send{width:32px;height:32px;border-radius:50%;background:#fff;color:#111;display:grid;place-items:center;flex:none}
+  .send:disabled{background:rgba(255,255,255,.2);color:rgba(0,0,0,.6);cursor:default}
+  .send svg{width:18px;height:18px;stroke-width:2.2}
+  .hint{max-width:var(--col);margin:8px auto 0;text-align:center;font-size:12px;line-height:16px;color:var(--muted)}
+
+  /* ---------- Dialog ---------- */
+  dialog{background:#232325;color:var(--text);border:1px solid var(--line);border-radius:20px;padding:20px;width:min(420px,calc(100vw - 32px))}
+  dialog::backdrop{background:rgba(0,0,0,.6)}
+  dialog h2{margin:0 0 6px;font-size:17px}
+  dialog p{margin:0 0 14px;color:var(--muted);font-size:14px;line-height:20px}
+  dialog input{width:100%;height:40px;border-radius:12px;border:1px solid var(--line);background:var(--bg);padding:0 12px;font-family:ui-monospace,Menlo,monospace;font-size:13px}
+  .row{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
+  .btn{height:36px;padding:0 16px;border-radius:999px;font-size:14px;font-weight:500;background:var(--hover)}
+  .btn.primary{background:#fff;color:#111}
+
+  /* ---------- Mobile ---------- */
+  .scrim{display:none}
+  @media (max-width:820px){
+    aside{position:fixed;inset:0 auto 0 0;z-index:20;transform:translateX(-100%);transition:transform .2s;max-width:92vw}
+    .side-panel{width:min(var(--side),calc(92vw - var(--m-rail)))}
+    .admin-head{display:flex;height:56px;flex:none;align-items:center;gap:8px;padding:0 16px}
+    body.side-open aside{transform:none}
+    body.side-open .scrim{display:block;position:fixed;inset:0;z-index:15;background:rgba(0,0,0,.5)}
+    .menu{display:inline-flex}
+    .col{padding:8px 16px 16px}
+    .dock{padding:0 12px max(12px,env(safe-area-inset-bottom))}
+    .hint{display:none}
+    .msg.user .bubble{max-width:88%}
+    .tools{opacity:1}
+  }
+  /* ds-allow-hardcode:end */
+</style>
+</head>
+<body>
+<div class="app">
+  <aside id="side" aria-label="Navigasi">
+    <nav class="rail" aria-label="Bagian">
+      <button id="railChat" aria-label="Chat"><span class="ico"><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 1 3.2 6.4L4 20l1-3.6A7.9 7.9 0 0 1 4 12Z"/></svg><span class="busy-dot" id="busyDot" hidden></span></span>Chat</button>
+      <span class="sep" role="separator"></span>
+      <a href="#/admin/akun" data-sec="akun"><span class="ico"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14a5 5 0 0 1 3.5 6"/></svg></span>Akun</a>
+      <a href="#/admin/cookie" data-sec="cookie"><span class="ico"><svg viewBox="0 0 24 24"><path d="M21 12.5A9 9 0 1 1 11.5 3a3 3 0 0 0 3.5 3.5 3 3 0 0 0 3.5 3.5 3 3 0 0 0 2.5 2.5Z"/><path d="M8.5 9.5h.01M12 15h.01M8 15.5h.01M16 15h.01"/></svg></span>Cookie</a>
+      <a href="#/admin/tugas" data-sec="tugas"><span class="ico"><svg viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"/></svg></span>Tugas</a>
+      <a href="#/admin/media" data-sec="media"><span class="ico"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-9 9"/></svg></span>Media</a>
+      <a href="#/admin/uji-api" data-sec="uji-api"><span class="ico"><svg viewBox="0 0 24 24"><path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.7 3h10.6a2 2 0 0 0 1.7-3l-5-9V3"/></svg></span>Uji API</a>
+      <a href="#/admin/dokumen" data-sec="dokumen"><span class="ico"><svg viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg></span>Dokumen</a>
+      <span class="grow"></span>
+      <button id="keyBtn" aria-label="API Key"><span class="ico"><svg viewBox="0 0 24 24"><circle cx="8" cy="15" r="4"/><path d="m11 12 9-9M17 6l3 3"/></svg><span class="dot" id="keyDot"></span></span>Key</button>
+    </nav>
+    <div class="side-panel">
+    <section id="sideChat" aria-label="Riwayat percakapan">
+      <label class="search">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <span class="sr">Cari percakapan</span>
+        <input id="q" type="search" placeholder="Cari" autocomplete="off">
+      </label>
+      <div class="sec-head"><span id="threadsHead">Percakapan</span>
+        <button class="icon-btn" id="newBtn" title="Percakapan baru" aria-label="Percakapan baru"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+      </div>
+      <nav class="threads" id="threads" aria-labelledby="threadsHead"></nav>
+    </section>
+    </div>
+  </aside>
+  <div class="scrim" id="scrim"></div>
+
+  <main>
+    <header>
+      <button class="menu" id="menuBtn" aria-label="Buka riwayat" aria-controls="side" aria-expanded="false">
+        <svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+      <div class="title" id="title">Percakapan baru</div>
+    </header>
+
+    <div class="scroll" id="scroll">
+      <div class="col" id="log" role="log" aria-live="polite" aria-busy="false"></div>
+    </div>
+
+    <div class="dock">
+      <div class="att-msg" id="attMsg" role="status" aria-live="polite"></div>
+      <form class="composer" id="form">
+        <div class="atts" id="atts" hidden></div>
+        <button class="attach" id="attachBtn" type="button" aria-label="Lampirkan gambar acuan" title="Lampirkan gambar acuan (atau tempel / seret ke sini)"><svg viewBox="0 0 24 24"><path d="m20 11.5-8.2 8.2a5 5 0 0 1-7.1-7.1l8.6-8.6a3.4 3.4 0 0 1 4.8 4.8l-8.6 8.6a1.7 1.7 0 0 1-2.4-2.4l7.9-7.9"/></svg></button>
+        <input id="file" type="file" accept="image/*" multiple hidden>
+        <label class="sr" for="input">Pesan</label>
+        <textarea id="input" rows="1" placeholder="Kirim pesan" autocomplete="off"></textarea>
+        <button class="send" id="send" type="submit" aria-label="Kirim" disabled></button>
+      </form>
+      <div class="hint">Enter untuk kirim · Shift+Enter baris baru · Riwayat tersimpan di server ini</div>
+    </div>
+  </main>
+
+  <section class="admin-view" id="adminView" hidden aria-label="Konsol admin">
+    <div class="admin-head">
+      <button class="menu" id="menuBtn2" aria-label="Buka navigasi" aria-controls="side" aria-expanded="false">
+        <svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+      <div class="title" id="adminTitle">Admin</div>
+      <a class="busy-pill" id="busyPill" href="#/chat" hidden>Chat masih menjawab</a>
+    </div>
+  </section>
+</div>
+
+<dialog id="keyDlg">
+  <form method="dialog" id="keyForm">
+    <h2>API Key</h2>
+    <p>Isi <code>MUSE2API_KEY</code> dari server. Disimpan di browser ini dan dipakai bersama konsol admin.</p>
+    <label class="sr" for="keyIn">API Key</label>
+    <input id="keyIn" autocomplete="off" spellcheck="false" placeholder="m2a_...">
+    <div class="row"><button class="btn" value="cancel" formnovalidate>Batal</button><button class="btn primary" value="ok">Simpan</button></div>
+  </form>
+</dialog>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+// ds-allow-hardcode:start: geometri ikon SVG
+const ICON = {
+  send: '<svg viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></svg>',
+  stop: '<svg viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="1.5" fill="currentColor" stroke="none"/></svg>',
+  copy: '<svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg>',
+  x: '<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg>',
+  edit: '<svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16v4ZM14 6l4 4"/></svg>',
+  down: '<svg viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>',
+  redo: '<svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.3-5.6M20 4v5h-5"/></svg>',
+  trash: '<svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>',
+};
+// ds-allow-hardcode:end
+
+/* ---------- Penyimpanan (localStorage bisa kosong/terblokir) ---------- */
+const KEY_STORE = 'muse2api_key', CHAT_STORE = 'muse2api_chats';
+const load = (k, d) => { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch { return d; } };
+const save = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} };
+// ?key= dari link disimpan sekali ke browser lalu dihapus dari alamat (tidak tertinggal di riwayat/tangkapan layar).
+const urlKey = new URLSearchParams(location.search).get('key');
+if (urlKey){
+  try { localStorage.setItem(KEY_STORE, urlKey.trim()); } catch {}
+  const u = new URL(location.href); u.searchParams.delete('key'); history.replaceState(null, '', u);
+}
+let KEY = (urlKey || '').trim() || (() => { try { return localStorage.getItem(KEY_STORE) || ''; } catch { return ''; } })();
+let chats = load(CHAT_STORE, []);
+if (!Array.isArray(chats)) chats = [];
+let cur = null;           // percakapan aktif
+let busy = null;          // {ctrl, msg} saat sedang menjawab
+
+/* ---------- Markdown aman: escape dulu, baru format ---------- */
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function inline(s){
+  return s
+    .replace(/`([^`\n]+)`/g, '<code>$1</code>')
+    .replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>')
+    .replace(/(^|[^*\w])\*([^*\n]+)\*(?=[^*\w]|$)/g, '$1<em>$2</em>')
+    // File buatan muse (lihat _save_chat_file di app.py): tombol unduh, juga untuk URL relatif.
+    .replace(/\[([^\]\n]+)\]\(((?:https?:\/\/[^\s\/)]+)?\/v1\/files\/[0-9a-f]{32}(?:\.[a-z0-9]{1,10})?(?:\?name=[^\s)"]*)?)\)/g, (_, t, u) => '<a class="file" href="' + u + '" download>' + ICON.down + t + '</a>')
+    // Hanya http(s): mencegah javascript: dan data: lewat tautan.
+    .replace(/\[([^\]\n]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+}
+function md(src){
+  const out = [], lines = esc(src).split('\n');
+  let i = 0, para = [];
+  const flush = () => { if (para.length){ out.push('<p>' + inline(para.join('<br>')) + '</p>'); para = []; } };
+  while (i < lines.length){
+    const l = lines[i];
+    const fence = l.match(/^\s*```\s*([\w+-]*)/);
+    if (fence){
+      flush();
+      const body = []; i++;
+      while (i < lines.length && !/^\s*```/.test(lines[i])) body.push(lines[i++]);
+      i++;
+      out.push('<div class="code"><div class="code-head"><span>' + (fence[1] || 'kode') +
+        '</span><button class="mini" data-copy-code>' + ICON.copy + 'Salin</button></div><pre><code>' + body.join('\n') + '</code></pre></div>');
+      continue;
+    }
+    if (/^\s*\|.*\|\s*$/.test(l) && /^\s*\|?\s*:?-{2,}/.test(lines[i + 1] || '')){
+      flush();
+      const cells = r => r.trim().replace(/^\||\|$/g, '').split('|').map(c => inline(c.trim()));
+      const head = cells(l), rows = [];
+      i += 2;
+      while (i < lines.length && /^\s*\|.*\|\s*$/.test(lines[i])) rows.push(cells(lines[i++]));
+      // Tabel lebar digeser di dalam kotaknya sendiri; tabindex supaya bisa digeser dengan keyboard.
+      out.push('<div class="tbl" tabindex="0" role="region" aria-label="Tabel"><table><thead><tr>' + head.map(c => '<th>' + c + '</th>').join('') +
+        '</tr></thead><tbody>' + rows.map(r => '<tr>' + r.map(c => '<td>' + c + '</td>').join('') + '</tr>').join('') + '</tbody></table></div>');
+      continue;
+    }
+    const h = l.match(/^(#{1,4})\s+(.*)/);
+    if (h){ flush(); out.push('<h' + h[1].length + '>' + inline(h[2]) + '</h' + h[1].length + '>'); i++; continue; }
+    if (/^\s*([-*•]|\d+[.)])\s+/.test(l)){
+      flush();
+      const ordered = /^\s*\d/.test(l), items = [];
+      while (i < lines.length && /^\s*([-*•]|\d+[.)])\s+/.test(lines[i])) items.push(lines[i++].replace(/^\s*([-*•]|\d+[.)])\s+/, ''));
+      const t = ordered ? 'ol' : 'ul';
+      out.push('<' + t + '>' + items.map(x => '<li>' + inline(x) + '</li>').join('') + '</' + t + '>');
+      continue;
+    }
+    if (/^&gt;\s?/.test(l)){ flush(); out.push('<blockquote>' + inline(l.replace(/^&gt;\s?/, '')) + '</blockquote>'); i++; continue; }
+    if (!l.trim()){ flush(); i++; continue; }
+    para.push(l); i++;
+  }
+  flush();
+  return out.join('');
+}
+
+/* ---------- API ---------- */
+async function api(path, opts = {}){
+  opts.headers = Object.assign({'Content-Type': 'application/json'}, opts.headers || {});
+  if (KEY) opts.headers.Authorization = 'Bearer ' + KEY;
+  const r = await fetch(path, opts);
+  if (r.status === 401){ setKeyState(false); throw new ApiError('API Key belum diisi atau salah.', 401); }
+  setKeyState(true);
+  if (!r.ok){
+    let msg = 'HTTP ' + r.status;
+    try { const d = await r.json(); msg = typeof d.detail === 'string' ? d.detail : (d.error && d.error.message) || msg; } catch {}
+    throw new ApiError(friendly(msg), r.status);
+  }
+  return r;
+}
+class ApiError extends Error { constructor(m, code){ super(m); this.code = code; } }
+function friendly(m){
+  // Pemutus server: muse gagal beruntun, permintaan sengaja tidak dikirim (lihat _outage_check di app.py).
+  const o = m.match(/MUSE_OUTAGE (\w+) (\d+) (\d\d:\d\d) (\d\d:\d\d)/);
+  if (o) return 'Layanan ' + (o[1] === 'video' ? 'video' : 'gambar') + ' muse.ai sedang gangguan: ' + o[2] + ' percobaan terakhir gagal (terakhir ' + o[3] + '). Permintaan ini tidak dikirim supaya Anda tidak menunggu sekitar 7 menit. Coba lagi setelah ' + o[4] + '.';
+  if (/prompt 为空/.test(m)) return 'Tulis apa yang ingin dibuat, misalnya: /gambar kucing oren di sofa.';
+  if (/没有可用账号/.test(m)) return 'Tidak ada akun muse.ai yang aktif. Impor cookie dulu di Admin › Cookie.';
+  if (/超时|timeout/i.test(m)) return 'Muse tidak menjawab sebelum batas waktu. Coba lagi.';
+  if (/额度|quota/i.test(m)) return 'Kuota akun habis. Tambah akun atau tunggu kuota pulih.';
+  if (/拒绝视频|video_not_available|国家|地区|country or region/i.test(m)) return 'Video tidak tersedia untuk akun di wilayah ini. Tambah akun dari wilayah yang didukung, atau pasang proxy di Admin › Akun.';
+  // Teks penolakan muse.ai berbahasa Mandarin. 500/502/503 = layanan media muse sendiri gangguan (terjadi juga di akun berkuota sisa).
+  if (/仅返回文本/.test(m) && /50[0-4]|内部错误|上游错误|过载|不可用|internal|upstream|overload/i.test(m)) return 'Server muse.ai gagal membuat media (error 500/502/503); muse sudah mencoba ulang sendiri. Layanannya sedang gangguan, bukan karena prompt. Coba lagi beberapa menit lagi.';
+  if (/仅返回文本/.test(m)) return 'Muse membalas dengan teks, bukan media: ' + m.replace(/^.*?仅返回文本[:：]\s*/, '');
+  return m;
+}
+function setKeyState(ok){ $('keyDot').className = 'dot ' + (ok ? 'ok' : 'bad'); $('keyBtn').setAttribute('aria-label', ok ? 'API Key (valid)' : 'API Key (belum valid)'); }
+
+// Satu model "muse": daftar model hanya dipakai untuk memeriksa key; jenis dipilih per pesan lewat /v1/intent.
+async function loadModels(){
+  try { await api('/v1/models'); } catch (e) { if (e.code === 401) openKey(); }
+}
+
+/* ---------- Percakapan ---------- */
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+let pushTimer = 0;
+function persist(){
+  save(CHAT_STORE, chats);
+  clearTimeout(pushTimer);
+  pushTimer = setTimeout(pushChats, 800);
+}
+// PUT menimpa seluruh daftar, jadi gabungkan dulu dengan server: tab/browser lain bisa sudah menambah atau menghapus.
+async function pushChats(){
+  try {
+    const remote = await (await api('/v1/chats')).json();
+    if (Array.isArray(remote)) merge(remote);
+    await api('/v1/chats', {method: 'PUT', body: JSON.stringify(chats)});
+    chats.forEach(c => synced.add(c.id));
+  } catch {}
+}
+// synced = id yang pernah terlihat di server: hilang dari server -> dihapus di tempat lain; belum pernah -> baru di tab ini.
+// shortcut: per percakapan, `updated` terbaru menang; jeda GET->PUT (milidetik) masih bisa bertabrakan. Upgrade: PUT per percakapan.
+const synced = new Set(), deleted = new Set();
+function merge(remote){
+  const ids = new Set(remote.map(r => r.id)), mine = new Map(chats.map(c => [c.id, c]));
+  const n = chats.length;
+  chats = chats.filter(c => ids.has(c.id) || !synced.has(c.id) || (busy && cur === c));
+  let changed = chats.length !== n;
+  for (const r of remote){
+    synced.add(r.id);
+    const l = mine.get(r.id);
+    if (!l){ if (!deleted.has(r.id)){ chats.push(r); changed = true; } }
+    else if ((r.updated || 0) > (l.updated || 0) && !(busy && cur === l)){ Object.assign(l, r); changed = true; }
+  }
+  if (cur && !chats.includes(cur)) cur = null;
+  if (changed){ save(CHAT_STORE, chats); busy ? renderList() : render(); }
+  return chats.some(c => !ids.has(c.id));
+}
+// Server = sumber utama; localStorage hanya cadangan saat server/key belum bisa dipakai.
+async function pullChats(first){
+  let remote;
+  try { remote = await (await api('/v1/chats')).json(); } catch { return; }
+  if (!Array.isArray(remote)) return;
+  // Saat dimuat, daftar server menang (seperti sebelumnya); server kosong -> riwayat lama browser ini dipindahkan ke sana.
+  if (first && remote.length) chats.forEach(c => synced.add(c.id));
+  if (merge(remote)) persist();
+}
+document.addEventListener('visibilitychange', () => { if (!document.hidden) pullChats(); });
+function newChat(){ cur = null; render(); $('input').focus(); closeSide(); }
+function openChat(id){ cur = chats.find(c => c.id === id) || null; render(); closeSide(); }
+
+function renderList(){
+  const q = $('q').value.trim().toLowerCase();
+  const list = chats.filter(c => !q || c.title.toLowerCase().includes(q) || c.messages.some(m => (m.content || '').toLowerCase().includes(q)))
+                    .sort((a, b) => b.updated - a.updated);
+  const box = $('threads');
+  if (!list.length){ box.innerHTML = '<div class="empty-list">' + (q ? 'Tidak ada yang cocok.' : 'Belum ada percakapan.') + '</div>'; return; }
+  let html = '';
+  for (const c of list){
+    html += '<div class="th' + (cur && cur.id === c.id ? ' on' : '') + '" data-id="' + c.id + '">' +
+      '<button class="open"' + (cur && cur.id === c.id ? ' aria-current="true"' : '') + '>' + esc(c.title) + '</button>' +
+      '<button class="del" aria-label="Hapus percakapan">' + ICON.trash + '</button></div>';
+  }
+  box.innerHTML = html;
+}
+
+function render(){
+  renderList();
+  // Chrome Android sering memuat ulang tab di latar belakang; reload harus kembali ke percakapan yang sama, bukan layar kosong.
+  try { sessionStorage.setItem('muse2api_cur', cur ? cur.id : ''); } catch {}
+  $('title').textContent = cur ? cur.title : 'Percakapan baru';
+  const log = $('log');
+  if (!cur || !cur.messages.length){
+    log.innerHTML = '<div class="hero"><h1>Mau bahas apa hari ini?</h1><p>Chat, gambar, atau video dipilih otomatis dari pesan Anda. Paksa dengan <b>/chat</b>, <b>/gambar</b>, atau <b>/video</b>; tulis <b>lanjutkan</b> untuk menyambung hasil sebelumnya.</p></div>';
+    return;
+  }
+  log.innerHTML = '';
+  let prev = 0;
+  cur.messages.forEach((m, i) => {
+    if (m.ts - prev > 10 * 60e3){
+      const s = document.createElement('div');
+      s.className = 'stamp';
+      s.textContent = new Date(m.ts).toLocaleString('id-ID', {day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'});
+      log.appendChild(s);
+    }
+    prev = m.ts;
+    log.appendChild(msgEl(m, i));
+  });
+  toBottom(true);
+}
+
+function msgEl(m, i){
+  const row = document.createElement('div');
+  row.className = 'msg ' + m.role;
+  const wrap = document.createElement('div');
+  wrap.className = m.role === 'assistant' ? 'wrap' : '';
+  const b = document.createElement('div');
+  b.className = 'bubble';
+  wrap.appendChild(b);
+  row.appendChild(m.role === 'assistant' ? wrap : b);
+  row._b = b; row._w = wrap;
+  if (m.id) row.dataset.mid = m.id;  // item batch dicat ulang sendiri, tanpa render() yang memuat ulang semua video
+  paint(row, m, i);
+  return row;
+}
+
+function paint(row, m, i){
+  const b = row._b, w = row._w;
+  if (m.role === 'user'){
+    b.textContent = m.content;
+    row.querySelectorAll('.tools,.uimgs').forEach(n => n.remove());
+    if (m.thumbs){
+      const g = document.createElement('div'); g.className = 'uimgs';
+      m.thumbs.forEach((t, k) => { const im = document.createElement('img'); im.src = t; im.alt = 'Lampiran ' + (k + 1); g.appendChild(im); });
+      row.insertBefore(g, b);
+    }
+    if (!busy && i === cur.messages.map(x => x.role).lastIndexOf('user')){
+      const t = document.createElement('div'); t.className = 'tools';
+      const e = document.createElement('button'); e.className = 'mini'; e.innerHTML = ICON.edit + 'Edit';
+      e.onclick = () => editLast(i); t.appendChild(e); row.appendChild(t);
+    }
+    return;
+  }
+  if (m.kind === 'image' || m.kind === 'video'){
+    b.innerHTML = '';
+    if (m.content) { const p = document.createElement('p'); p.textContent = m.content; b.appendChild(p); }
+    if (m.url){
+      const el = document.createElement(m.kind === 'image' ? 'img' : 'video');
+      el.className = 'media'; el.src = m.url;
+      if (m.kind === 'image') el.alt = 'Gambar hasil: ' + (m.prompt || ''); else { el.controls = true; el.playsInline = true; el.preload = 'metadata'; }
+      b.appendChild(el);
+    }
+  } else if (m.pending && !m.content){
+    b.innerHTML = '<div class="thinking" aria-label="Menunggu jawaban"><i></i><i></i><i></i></div>';
+  } else {
+    b.innerHTML = md(m.content || '');
+    if (m.pending) (b.lastElementChild || b).classList.add('caret');
+  }
+  w.querySelectorAll('.note,.err,.tools,.acts').forEach(n => n.remove());
+  if (m.note){ const n = document.createElement('div'); n.className = 'note'; n.textContent = m.note; w.appendChild(n); }
+  if (m.batch){
+    const b = m.batch, a = document.createElement('div'); a.className = 'acts';
+    const btn = (label, key, fn, primary) => { const x = document.createElement('button'); x.className = 'btn' + (primary ? ' primary' : ''); x.textContent = label; x.dataset.batch = key; x.onclick = fn; a.appendChild(x); };
+    if (b.state === 'ask'){
+      btn('Buat ' + b.items.length + ' ' + KIND_LABEL[b.kind].toLowerCase(), 'go', () => startBatch(cur, m), true);
+      btn('Batal', 'no', () => { b.state = 'no'; m.content += '\n\nDibatalkan, tidak ada yang dibuat.'; persist(); render(); });
+    } else if (b.state === 'run' && cur.messages.some(x => x.batch_of === m.id && x.pending && !x.task)){
+      btn('Hentikan sisa', 'stop', () => stopBatch(cur, m));
+    }
+    if (a.childElementCount) w.appendChild(a);
+  }
+  if (m.error){
+    const e = document.createElement('div'); e.className = 'err'; e.setAttribute('role', 'alert');
+    const t = document.createElement('span'); t.textContent = m.error; e.appendChild(t);
+    if (m.error === KEY_MSG){ const k = document.createElement('button'); k.textContent = 'Isi API Key'; k.onclick = openKey; e.appendChild(k); }
+    else if (m.batch_of){ const r = document.createElement('button'); r.textContent = 'Coba lagi'; r.onclick = () => retryItem(cur, m); e.appendChild(r); }
+    else if (i === cur.messages.length - 1){ const r = document.createElement('button'); r.textContent = 'Coba lagi'; r.onclick = retry; e.appendChild(r); }
+    w.appendChild(e);
+  }
+  if (!m.pending && (m.content || m.url)){
+    const t = document.createElement('div'); t.className = 'tools';
+    const c = document.createElement('button'); c.className = 'mini'; c.innerHTML = ICON.copy + 'Salin';
+    c.onclick = () => copy(m.url ? location.origin + m.url : m.content, c);
+    t.appendChild(c);
+    if (m.url){ const a = document.createElement('a'); a.className = 'mini'; a.href = m.url; a.download = ''; a.innerHTML = ICON.down + 'Unduh'; t.appendChild(a); }
+    if (i === cur.messages.length - 1 && !busy && !m.batch_of){
+      const r = document.createElement('button'); r.className = 'mini'; r.innerHTML = ICON.redo + 'Ulangi'; r.onclick = retry; t.appendChild(r);
+    }
+    w.appendChild(t);
+  }
+}
+const KEY_MSG = 'API Key belum diisi atau salah.';
+// Sama dengan _OVERRIDE di intent.py: perintah paksa jenis tidak ikut ke model maupun judul.
+const CMD = /^\s*\/(video|vid|gambar|image|img|foto|chat|teks|text|视频|图片)(\s+|$)/i;
+
+/* ---------- Kirim ---------- */
+async function send(text){
+  text = text.trim();
+  if (!text || busy) return;
+  if (!cur){
+    cur = {id: uid(), title: (text.replace(CMD, '') || text).replace(/\s+/g, ' ').slice(0, 48), model: 'muse', messages: [], updated: Date.now()};
+    chats.push(cur);
+  }
+  const msg = {id: uid(), role: 'user', content: text, ts: Date.now()};
+  if (atts.length){ msg.thumbs = atts.map(a => a.thumb); attPut(msg.id, atts.map(a => a.data)); atts = []; renderAtts(); }
+  cur.messages.push(msg); cur.updated = Date.now(); persist();  // /v1/intent bisa ~8 dtk: reload saat itu tidak boleh menghilangkan pesan
+  $('input').value = ''; autosize();
+  await answer();
+}
+
+// Edit = kembalikan pesan terakhir ke kotak input dan buang jawabannya, seperti chatbot pada umumnya.
+async function editLast(i){
+  if (busy) return;
+  const u = cur.messages[i], full = u.thumbs && await attGet(u.id);
+  $('input').value = u.content;
+  if (full){ atts = full.map((data, k) => ({data, thumb: u.thumbs[k], size: Math.round(data.length * 0.75), name: 'gambar ' + (k + 1)})); renderAtts(); }
+  // Lampiran kembali ke kotak input; salinan lama di IndexedDB dibuang supaya tidak menumpuk.
+  attDel(cur.messages.slice(i).map(m => m.id).filter(Boolean));
+  cur.messages.splice(i); persist(); render(); autosize(); $('input').focus();
+}
+
+function retry(){
+  if (busy || !cur) return;
+  while (cur.messages.length && cur.messages[cur.messages.length - 1].role === 'assistant') cur.messages.pop();
+  if (cur.messages.length) answer();
+}
+
+const KIND_LABEL = {chat: 'Chat', image: 'Gambar', video: 'Video'};
+async function answer(){
+  // Kunci dulu: kirim beruntun saat /v1/intent belum menjawab tidak boleh memulai jawaban kedua.
+  const ctrl = new AbortController();
+  busy = {ctrl, m: null};
+  setBusy(true);
+  // /v1/intent bisa ~8 dtk: tampilkan pesan user + titik "berpikir" sekarang, bukan setelah jenis diputuskan.
+  render();
+  $('log').appendChild(msgEl({role: 'assistant', content: '', pending: true}, cur.messages.length));
+  toBottom(true);
+  // Jenis diputuskan server sebelum kuota terpakai, lalu ditampilkan di bubble.
+  const lastMedia = [...cur.messages].reverse().find(x => x.role === 'assistant');
+  const user = cur.messages[cur.messages.length - 1];
+  // Jawaban chat dimulai bersamaan dengan /v1/intent (keduanya ~8 dtk di muse), teksnya ditahan sampai jenis
+  // diputuskan: chat -> langsung tampil; gambar/video -> dibatalkan. Kata pertama tidak menunggu dua kali.
+  const draft = {role: 'assistant', content: '', ts: Date.now(), pending: true};
+  const early = (user.thumbs || []).length ? null : {ctrl: new AbortController(), paint: () => {}};
+  if (early){
+    ctrl.signal.addEventListener('abort', () => early.ctrl.abort());
+    early.run = streamChat(draft, early.ctrl.signal, () => early.paint());
+    early.run.catch(() => {});
+  }
+  let it;
+  try {
+    // Konteks singkat supaya AI muse memutuskan seperti chatbot, bukan dari kata kunci saja.
+    const history = cur.messages.slice(-7, -1).map(x => ({role: x.role, content: x.kind ? `[${x.kind} dibuat] ${x.prompt || ''}` : (x.content || '').slice(0, 400)}));
+    it = await (await api('/v1/intent', {method: 'POST', body: JSON.stringify({text: user.content, last_kind: lastMedia ? (lastMedia.kind || 'chat') : null, attachments: (user.thumbs || []).length, history}), signal: ctrl.signal})).json();
+  } catch (e) {
+    if (e.name === 'AbortError'){ busy = null; setBusy(false); render(); return; }
+    if (e.code === 401) openKey(); it = {kind: 'chat'};
+  }
+  const kind = it.kind;
+  if (early && kind !== 'chat') early.ctrl.abort();
+  // Daftar template: tanya dulu (tiap item memakai kuota), lalu satu bubble + satu tugas per template.
+  if (kind !== 'chat' && (it.items || []).length > 1){
+    const n = it.items.length, label = KIND_LABEL[kind].toLowerCase();
+    cur.messages.push({id: uid(), role: 'assistant', ts: Date.now(), batch: {kind, items: it.items, state: 'ask'},
+      content: `Pesan ini berisi **${n} template**. Saya akan membuat ${n} ${label} terpisah, satu per template, paling banyak ${BATCH_MAX} sekaligus. Setiap ${label} memakai kuota akun muse.`});
+    cur.updated = Date.now(); persist();
+    busy = null; setBusy(false); render();
+    return;
+  }
+  const m = kind === 'chat' && early ? draft : {role: 'assistant', content: '', ts: Date.now(), pending: true, kind: kind === 'chat' ? undefined : kind};
+  if (kind !== 'chat'){
+    m.prompt = it.prompt;
+    m.spec = [KIND_LABEL[kind], it.duration && it.duration + ' dtk', it.aspect_ratio, it.resolution, it.continue && 'lanjutan'].filter(Boolean).join(' · ');
+    m.note = m.spec + ' · menyiapkan';
+  }
+  cur.messages.push(m); cur.updated = Date.now(); persist();
+  render();
+  const row = $('log').lastElementChild, idx = cur.messages.length - 1;
+  busy.m = m;
+  const repaint = () => { paint(row, m, idx); toBottom(); };
+  try {
+    if (kind === 'chat' && early){ early.paint = repaint; repaint(); await early.run; }
+    else if (kind === 'chat') await streamChat(m, ctrl.signal, repaint);
+    else await media(kind, m, ctrl.signal, repaint);
+  } catch (e) {
+    if (e.name === 'AbortError') m.note = kind === 'chat' ? 'Dihentikan.' : 'Berhenti menunggu. Tugas tetap berjalan di server; hasilnya akan muncul di Media library.';
+    else {
+      if (m.spec) m.note = m.spec;  // jangan biarkan "menyiapkan"/"membuat · 45 dtk" di samping pesan error
+      // TypeError = fetch gagal di jaringan ("Failed to fetch"/"network error"): pesan mentah browser tidak berguna.
+      m.error = e.code === 401 ? KEY_MSG : e instanceof TypeError || !e.message ? 'Koneksi ke server terputus. Periksa server lalu coba lagi.' : e.message;
+    }
+    if (e.code === 401) openKey();
+  } finally {
+    m.pending = false; busy = null;
+    cur.updated = Date.now(); persist();
+    setBusy(false); render();
+  }
+}
+
+async function streamChat(m, signal, repaint){
+  // Muse tidak punya memori lintas request di sini: kirim riwayat penuh tiap giliran.
+  // Media yang sudah dibuat ikut sebagai catatan supaya muse tahu ("video tadi..."); riwayat sangat panjang dipotong
+  // dari yang tertua (shortcut: tanpa ringkasan; tambahkan ringkasan bila percakapan >30rb karakter sering terjadi).
+  let messages = cur.messages.filter(x => x !== m && !x.error && (x.kind ? x.url : x.content))
+                             .map(x => ({role: x.role, content: x.kind ? `[${x.kind === 'video' ? 'Video' : 'Gambar'} sudah dibuat dari prompt: ${x.prompt || ''}]` : x.role === 'user' ? (x.content.replace(CMD, '') || x.content) : x.content}));
+  let size = messages.reduce((n, x) => n + x.content.length, 0);
+  while (messages.length > 1 && size > 30000){ size -= messages[0].content.length; messages.shift(); }
+  if (messages[0] && messages[0].role === 'assistant') messages.shift();
+  // Pertanyaan tentang gambar: lampiran pesan terakhir ikut dikirim (format OpenAI image_url); riwayat tetap teks.
+  const at = cur.messages.indexOf(m);  // -1: draf yang belum masuk percakapan (jawaban dini)
+  const user = cur.messages[at < 0 ? cur.messages.length - 1 : at - 1];
+  if (user && user.thumbs){
+    const images = await attGet(user.id);
+    if (!images) throw new ApiError('Gambar lampiran tidak ditemukan di browser ini (data situs dihapus atau mode privat). Lampirkan ulang gambarnya.');
+    messages[messages.length - 1].content = [{type: 'text', text: user.content}, ...images.map(url => ({type: 'image_url', image_url: {url}}))];
+  }
+  const r = await api('/v1/chat/completions', {method: 'POST', signal,
+    body: JSON.stringify({model: 'muse-spark', stream: true, messages})});
+  const reader = r.body.getReader(), dec = new TextDecoder();
+  let buf = '', done = false;
+  while (!done){
+    const {value, done: end} = await reader.read();
+    if (end) break;
+    buf += dec.decode(value, {stream: true});
+    const lines = buf.split('\n'); buf = lines.pop();
+    for (const line of lines){
+      if (!line.startsWith('data:')) continue;
+      const data = line.slice(5).trim();
+      if (data === '[DONE]'){ done = true; break; }
+      let j; try { j = JSON.parse(data); } catch { continue; }
+      // Error di tengah stream datang sebagai event, bukan status HTTP.
+      if (j.error) throw new ApiError(friendly(j.error.message || 'Terjadi kesalahan.'), j.error.code);
+      const d = j.choices && j.choices[0] && j.choices[0].delta;
+      if (d && d.content){ m.content += d.content; repaint(); }
+    }
+  }
+  if (!done && !m.content) throw new ApiError('Koneksi terputus sebelum jawaban selesai.');
+  if (!done) m.note = 'Jawaban terputus sebelum selesai.';
+}
+
+async function media(kind, m, signal, repaint){
+  const conversation_id = cur.id, user = cur.messages[cur.messages.indexOf(m) - 1];
+  const body = kind === 'image' ? {prompt: m.prompt, conversation_id, timeout: 600} : {prompt: m.prompt, conversation_id};
+  if (user && user.thumbs){
+    const images = await attGet(user.id);
+    if (!images) throw new ApiError('Gambar lampiran tidak ditemukan di browser ini (data situs dihapus atau mode privat). Lampirkan ulang gambarnya.');
+    body.images = images;
+  }
+  const r = await (await api(kind === 'image' ? '/v1/images/tasks' : '/v1/videos', {method: 'POST', signal, body: JSON.stringify(body)})).json();
+  // Id tugas disimpan: setelah refresh, hasil tetap dipantau (resumeTask), bukan dianggap terputus.
+  m.task = r.id; m.t0 = Date.now(); persist();
+  await pollTask(kind, m, signal, repaint);
+}
+
+async function pollTask(kind, m, signal, repaint){
+  const t0 = m.t0 || Date.now();
+  const wait = ms => new Promise((res, rej) => {
+    const t = setTimeout(res, ms);
+    signal.addEventListener('abort', () => { clearTimeout(t); rej(new DOMException('', 'AbortError')); }, {once: true});
+  });
+  const tick = s => { m.note = m.spec + ' · ' + s + ' · ' + Math.round((Date.now() - t0) / 1000) + ' dtk'; repaint(); };
+  for (;;){
+    const s = await (await api((kind === 'image' ? '/v1/images/tasks/' : '/v1/videos/') + encodeURIComponent(m.task), {signal})).json();
+    if (s.status === 'completed' || s.status === 'succeeded'){ m.url = kind === 'image' ? s.data[0].url : (s.result && s.result.url) || s.url; break; }
+    if (s.status === 'failed') throw new ApiError(friendly(s.error || (kind === 'image' ? 'Gagal membuat gambar.' : 'Gagal membuat video.')));
+    tick({queued: 'antre', processing: 'membuat', in_progress: 'membuat'}[s.status] || s.status || 'antre'); await wait(kind === 'image' ? 3000 : 4000);
+  }
+  m.note = m.spec + ' · selesai dalam ' + Math.round((Date.now() - t0) / 1000) + ' detik.';
+}
+
+async function resumeTask(c, m){
+  const show = m.batch_of ? showItem(c, m) : () => { if (cur === c) render(); };
+  try { await pollTask(m.kind, m, new AbortController().signal, show); }
+  catch (e) { if (m.spec) m.note = m.spec; m.error = e.code === 401 ? KEY_MSG : (e.message || 'Gagal memeriksa tugas.'); }
+  finally { m.pending = false; persist(); show(); if (m.batch_of) pump(c); }
+}
+
+/* ---------- Batch: satu tugas per template ---------- */
+// shortcut: batas tetap 3 per tab (akun video saat ini <= 3; antrean server menunggu maks queue_timeout). Naikkan bila akun bertambah.
+const BATCH_MAX = 3, running = new Set();
+const showItem = (c, m) => () => {
+  const row = cur === c && document.querySelector('[data-mid="' + m.id + '"]');
+  if (row) paint(row, m, c.messages.indexOf(m));
+  const head = cur === c && document.querySelector('[data-mid="' + m.batch_of + '"]');
+  if (head) paint(head, c.messages.find(x => x.id === m.batch_of), -1);
+};
+function startBatch(c, m){
+  const b = m.batch;
+  for (const it of b.items){
+    const spec = [KIND_LABEL[b.kind], it.duration && it.duration + ' dtk', it.aspect_ratio, it.resolution].filter(Boolean).join(' · ');
+    c.messages.push({id: uid(), role: 'assistant', ts: Date.now(), kind: b.kind, batch_of: m.id, pending: true,
+      content: String(it.n).padStart(2, '0') + '. ' + it.title, prompt: it.prompt, spec, note: spec + ' · antre'});
+  }
+  m.content = `Membuat **${b.items.length} ${KIND_LABEL[b.kind].toLowerCase()}**, satu per template, paling banyak ${BATCH_MAX} sekaligus. Hasilnya muncul di bawah sesuai nomor template.`;
+  b.n = b.items.length; delete b.items;  // prompt sudah ada di tiap item; jangan simpan dua kali
+  b.state = 'run'; c.updated = Date.now(); persist(); render();
+  pump(c);
+}
+function pump(c){
+  const live = c.messages.filter(x => x.batch_of && x.pending && (x.task || running.has(x))).length;
+  c.messages.filter(x => x.batch_of && x.pending && !x.task && !running.has(x)).slice(0, Math.max(0, BATCH_MAX - live)).forEach(x => runItem(c, x));
+}
+async function runItem(c, m){
+  running.add(m);
+  const show = showItem(c, m);
+  try {
+    const body = m.kind === 'image' ? {prompt: m.prompt, conversation_id: c.id, timeout: 600} : {prompt: m.prompt, conversation_id: c.id};
+    // Kunci = item + percobaan: muat ulang / tab kedua memakai tugas yang sama; "Coba lagi" membuat tugas baru.
+    const r = await (await api(m.kind === 'image' ? '/v1/images/tasks' : '/v1/videos', {method: 'POST', headers: {'Idempotency-Key': m.id + '.' + (m.tries || 0)}, body: JSON.stringify(body)})).json();
+    m.task = r.id; m.t0 = Date.now(); persist();
+    await pollTask(m.kind, m, new AbortController().signal, show);
+  } catch (e) {
+    m.note = m.spec; m.error = e.code === 401 ? KEY_MSG : (e.message || 'Gagal membuat ' + KIND_LABEL[m.kind].toLowerCase() + '.');
+  } finally {
+    m.pending = false; running.delete(m); c.updated = Date.now(); persist(); show(); pump(c);
+  }
+}
+function retryItem(c, m){
+  m.error = m.url = m.task = undefined; m.tries = (m.tries || 0) + 1;
+  m.pending = true; m.note = m.spec + ' · antre'; c.updated = Date.now(); persist();
+  showItem(c, m)(); pump(c);
+}
+function stopBatch(c, m){
+  c.messages.filter(x => x.batch_of === m.id && x.pending && !x.task && !running.has(x))
+            .forEach(x => { x.pending = false; x.note = x.spec; x.error = 'Dibatalkan.'; });
+  c.updated = Date.now(); persist(); render();
+}
+
+/* ---------- Lampiran gambar acuan ---------- */
+// Batas = batas server (MAX_REFERENCE_*), dicek di sini supaya penolakan terlihat sebelum kirim.
+const ATT_MAX = 10, ATT_BYTES = 40 << 20, ATT_TOTAL = 100 << 20;
+let atts = [];
+// Gambar penuh di IndexedDB (localStorage ~5 MB terlalu kecil; riwayat hanya menyimpan thumbnail). FULL = cache tab;
+// bila IndexedDB tidak tersedia (mode privat tertentu), lampiran tetap jalan selama tab terbuka.
+const FULL = new Map();
+let idbOpen = null;
+const idbDb = () => idbOpen || (idbOpen = new Promise((res, rej) => {
+  const r = indexedDB.open('muse2api', 1);
+  r.onupgradeneeded = () => r.result.createObjectStore('att');
+  r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
+}));
+const idb = (mode, fn) => idbDb().then(db => new Promise((res, rej) => {
+  const tx = db.transaction('att', mode), req = fn(tx.objectStore('att'));
+  tx.oncomplete = () => res(req && req.result); tx.onerror = tx.onabort = () => rej(tx.error);
+}));
+function attPut(id, list){ FULL.set(id, list); return idb('readwrite', st => st.put(list, id)).catch(() => {}); }
+async function attGet(id){ return FULL.get(id) || await idb('readonly', st => st.get(id)).catch(() => undefined); }
+function attDel(ids){ ids.forEach(id => FULL.delete(id)); return ids.length ? idb('readwrite', st => { ids.forEach(id => st.delete(id)); }).catch(() => {}) : Promise.resolve(); }
+let attTimer = 0;
+function attNote(t){ $('attMsg').textContent = t; clearTimeout(attTimer); attTimer = setTimeout(() => { $('attMsg').textContent = ''; }, 5000); }
+const readFile = f => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = () => rej(r.error); r.readAsDataURL(f); });
+const thumbOf = src => new Promise(res => {
+  const im = new Image();
+  im.onload = () => {
+    const k = Math.min(1, 192 / Math.max(im.naturalWidth, im.naturalHeight, 1)), c = document.createElement('canvas');
+    c.width = Math.max(1, Math.round(im.naturalWidth * k)); c.height = Math.max(1, Math.round(im.naturalHeight * k));
+    c.getContext('2d').drawImage(im, 0, 0, c.width, c.height); res(c.toDataURL('image/jpeg', 0.8));
+  };
+  im.onerror = () => res(null); im.src = src;
+});
+async function addFiles(files){
+  for (const f of files){
+    if (!/^image\//.test(f.type)){ attNote('Hanya gambar yang bisa dilampirkan.'); continue; }
+    if (atts.length >= ATT_MAX){ attNote('Maksimal ' + ATT_MAX + ' lampiran.'); break; }
+    if (f.size > ATT_BYTES || atts.reduce((n, a) => n + a.size, 0) + f.size > ATT_TOTAL){ attNote('Gambar terlalu besar (maks 40 MB per file, 100 MB total).'); continue; }
+    const data = await readFile(f), thumb = await thumbOf(data);
+    if (!thumb){ attNote('Gambar "' + f.name + '" tidak bisa dibaca.'); continue; }
+    atts.push({data, thumb, size: f.size, name: f.name || 'gambar'});
+  }
+  renderAtts();
+}
+function renderAtts(){
+  const box = $('atts');
+  box.hidden = !atts.length; box.innerHTML = '';
+  atts.forEach((a, i) => {
+    const d = document.createElement('div'); d.className = 'att';
+    const im = document.createElement('img'); im.src = a.thumb; im.alt = 'Lampiran ' + (i + 1) + ': ' + a.name;
+    const x = document.createElement('button'); x.type = 'button'; x.innerHTML = ICON.x; x.setAttribute('aria-label', 'Hapus lampiran ' + (i + 1));
+    x.onclick = () => { atts.splice(i, 1); renderAtts(); $('input').focus(); };
+    d.append(im, x); box.appendChild(d);
+  });
+  $('input').placeholder = atts.length ? 'Apa yang ingin dibuat dari gambar ini?' : 'Kirim pesan';
+}
+
+/* ---------- UI helpers ---------- */
+function setBusy(on){
+  const s = $('send');
+  s.innerHTML = on ? ICON.stop : ICON.send;
+  s.setAttribute('aria-label', on ? 'Hentikan' : 'Kirim');
+  s.type = on ? 'button' : 'submit';
+  $('log').setAttribute('aria-busy', on ? 'true' : 'false');
+  // Stream tetap jalan saat panel admin dibuka; tandai di rail dan header admin.
+  $('busyDot').hidden = $('busyPill').hidden = !on;
+  $('railChat').setAttribute('aria-label', on ? 'Chat (sedang menjawab)' : 'Chat');
+  updateSend();
+}
+function updateSend(){ $('send').disabled = !busy && !$('input').value.trim(); }
+function autosize(){ const t = $('input'); t.style.height = 'auto'; t.style.height = Math.min(t.scrollHeight, 192) + 'px'; updateSend(); }
+let stick = true;
+$('scroll').addEventListener('scroll', () => { const s = $('scroll'); stick = s.scrollHeight - s.scrollTop - s.clientHeight < 80; });
+function toBottom(force){ if (force || stick){ const s = $('scroll'); s.scrollTop = s.scrollHeight; } }
+async function copy(text, btn){
+  try { await navigator.clipboard.writeText(text); const o = btn.innerHTML; btn.textContent = 'Tersalin'; setTimeout(() => btn.innerHTML = o, 1200); } catch {}
+}
+function openKey(){ const d = $('keyDlg'); if (d.open) return; $('keyIn').value = KEY; d.showModal(); $('keyIn').focus(); }
+function closeSide(){ document.body.classList.remove('side-open'); ['menuBtn', 'menuBtn2'].forEach(id => $(id).setAttribute('aria-expanded', 'false')); }
+function openSide(btn){ document.body.classList.add('side-open'); btn.setAttribute('aria-expanded', 'true'); }
+
+/* ---------- Routing: #/chat dan #/admin/<bagian>, tanpa memuat ulang halaman ---------- */
+const SECTIONS = {akun: 'pool', cookie: 'cookie', tugas: 'tasks', media: 'media', 'uji-api': 'play', dokumen: 'docs'};
+const LABELS = {akun: 'Akun', cookie: 'Cookie', tugas: 'Tugas', media: 'Media', 'uji-api': 'Uji API', dokumen: 'Dokumen'};
+let lastAdmin = 'akun', frame = null, frameReady = false;
+function route(){
+  let h = location.hash.replace(/^#\/?/, '');
+  if (!h) h = location.pathname.startsWith('/admin') ? 'admin/akun' : 'chat';
+  const [view, sec] = h.split('/');
+  const admin = view === 'admin';
+  if (admin){ lastAdmin = SECTIONS[sec] ? sec : lastAdmin; ensureFrame(); syncTab(); }
+  $('adminView').hidden = !admin; document.body.classList.toggle('admin', admin);
+  document.querySelector('main').hidden = admin; $('sideChat').hidden = admin;
+  admin ? $('railChat').removeAttribute('aria-current') : $('railChat').setAttribute('aria-current', 'page');
+  document.querySelectorAll('.rail a[data-sec]').forEach(a => a.dataset.sec === lastAdmin && admin ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current'));
+  $('adminTitle').textContent = 'Admin · ' + LABELS[lastAdmin];
+  document.title = admin ? 'GemuseAPI · Admin' : 'GemuseAPI · Chat';
+}
+function ensureFrame(){
+  if (frame) return;
+  // Dibuat sekali lalu dibiarkan hidup: isian form & status admin tidak hilang saat kembali ke chat.
+  frame = document.createElement('iframe');
+  frame.title = 'Konsol admin';
+  frame.src = '/admin?embed=1';  // key dibaca admin dari localStorage yang sama (satu origin)
+  frame.addEventListener('load', () => { frameReady = true; syncTab(); });
+  $('adminView').appendChild(frame);
+}
+function syncTab(){
+  if (!frameReady) return;
+  try { const w = frame.contentWindow; if (w.goTab) w.goTab(SECTIONS[lastAdmin]); } catch {}
+}
+window.addEventListener('hashchange', route);
+window.addEventListener('message', e => {
+  if (e.origin !== location.origin || !e.data || !e.data.m2aAdminTab) return;
+  const sec = Object.keys(SECTIONS).find(k => SECTIONS[k] === e.data.m2aAdminTab);
+  if (sec && sec !== lastAdmin) location.hash = '#/admin/' + sec;
+});
+// Key disimpan dari konsol admin (iframe) -> chat ikut memakainya.
+window.addEventListener('storage', e => { if (e.key === KEY_STORE){ KEY = e.newValue || ''; loadModels(); } });
+
+/* ---------- Events ---------- */
+$('form').addEventListener('submit', e => { e.preventDefault(); send($('input').value); });
+$('send').addEventListener('click', e => { if (busy){ e.preventDefault(); busy.ctrl.abort(); } });
+$('input').addEventListener('input', autosize);
+$('attachBtn').onclick = () => $('file').click();
+$('file').addEventListener('change', e => { addFiles([...e.target.files]); e.target.value = ''; });
+$('input').addEventListener('paste', e => {
+  const fs = [...((e.clipboardData && e.clipboardData.files) || [])].filter(f => /^image\//.test(f.type));
+  if (fs.length){ e.preventDefault(); addFiles(fs); }
+});
+$('form').addEventListener('dragover', e => { if ([...e.dataTransfer.types].includes('Files')){ e.preventDefault(); $('form').classList.add('drop'); } });
+$('form').addEventListener('dragleave', () => $('form').classList.remove('drop'));
+$('form').addEventListener('drop', e => { e.preventDefault(); $('form').classList.remove('drop'); addFiles([...e.dataTransfer.files]); });
+$('input').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey && !e.isComposing){ e.preventDefault(); if (!busy) send($('input').value); }
+});
+$('newBtn').onclick = newChat;
+$('q').addEventListener('input', renderList);
+$('threads').addEventListener('click', e => {
+  const th = e.target.closest('.th'); if (!th) return;
+  const del = e.target.closest('.del');
+  if (!del) return openChat(th.dataset.id);
+  // Dua klik untuk hapus, tanpa dialog browser yang memblokir.
+  if (!del.classList.contains('arm')){ del.classList.add('arm'); del.textContent = 'Hapus?'; setTimeout(() => renderList(), 2500); return; }
+  if (busy && cur && cur.id === th.dataset.id) busy.ctrl.abort();
+  const gone = chats.find(c => c.id === th.dataset.id);
+  if (gone) attDel(gone.messages.filter(m => m.thumbs).map(m => m.id));
+  // File buatan muse ikut dihapus dari server bersama percakapannya.
+  if (gone) for (const m of gone.messages) for (const [, n] of (m.content || '').matchAll(/\/v1\/files\/([0-9a-f]{32}(?:\.[a-z0-9]{1,10})?)/g)) api('/v1/files/' + n, {method: 'DELETE'}).catch(() => {});
+  chats = chats.filter(c => c.id !== th.dataset.id); deleted.add(th.dataset.id);
+  if (cur && cur.id === th.dataset.id) cur = null;
+  persist(); render();
+});
+$('log').addEventListener('click', e => {
+  const b = e.target.closest('[data-copy-code]');
+  if (b) copy(b.closest('.code').querySelector('code').textContent, b);
+});
+$('keyBtn').onclick = openKey;
+$('keyForm').addEventListener('submit', () => {
+  if ($('keyDlg').returnValue === 'cancel' || document.activeElement.value === 'cancel') return;
+  KEY = $('keyIn').value.trim();
+  try { localStorage.setItem(KEY_STORE, KEY); } catch {}
+  loadModels(); pullChats(true);
+});
+$('menuBtn').onclick = () => openSide($('menuBtn'));
+$('menuBtn2').onclick = () => openSide($('menuBtn2'));
+$('railChat').onclick = () => { location.hash = '#/chat'; };
+document.querySelector('.rail').addEventListener('click', e => { if (e.target.closest('a')) closeSide(); });
+$('scrim').onclick = closeSide;
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSide(); });
+
+// Jawaban yang tertinggal "pending" (tab ditutup saat stream) ditandai, bukan dibiarkan berputar.
+chats.forEach(c => c.messages.forEach(m => { if (m.pending && m.task && m.kind){ resumeTask(c, m); return; } if (m.pending && m.batch_of) return; if (m.pending){ m.pending = false; if (!m.content && !m.url) m.error = 'Terputus sebelum selesai.'; } }));
+// Pesan user tanpa jawaban (tab ditutup saat /v1/intent) -> tampilkan "Coba lagi" alih-alih diam.
+chats.forEach(c => { const l = c.messages[c.messages.length - 1]; if (l && l.role === 'user') c.messages.push({role: 'assistant', content: '', ts: Date.now(), error: 'Terputus sebelum selesai.'}); });
+cur = chats.find(c => c.id === (() => { try { return sessionStorage.getItem('muse2api_cur'); } catch { return null; } })()) || null;
+setBusy(false); render(); loadModels(); pullChats(true); route();
+chats.forEach(pump);  // item batch yang belum terkirim saat tab ditutup
+if ($('adminView').hidden) $('input').focus();
+</script>
+</body>
+</html>
