@@ -40,8 +40,6 @@ COPY tools/ ./tools/
 # 创建持久化数据目录
 RUN mkdir -p /app/data/media /app/data/downloads /root/muse2api-profiles
 
-VOLUME ["/app/data"]
-
 EXPOSE 18610
 
 CMD ["python", "-m", "uvicorn", "app:app", "--host", "0.0.0.0", "--port", "18610"]
